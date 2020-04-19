@@ -58,7 +58,15 @@ function Room(id) {
 
 Room.prototype.addPlayer = function(name, id) {
 
-    this.players.push({name: name, id: id});
+    let owner = false
+
+    if(this.players.length < 1) {
+        owner = true;
+    }
+
+    this.players.push({name: name, id: id, owner: owner});
+
+    return owner;
 
 }
 
@@ -99,9 +107,17 @@ io.on('connection', (socket)=> {
 
         console.log(`${data.name} has joined room ${data.id}`);
 
-        room.addPlayer(data.name, data.id);
+        let isOwner = room.addPlayer(data.name, socket.id);
+
+        socket.emit('init', {owner: isOwner, id: socket.id});
 
         io.to(data.id).emit('newplayer', room.players);
+
+    });
+
+    socket.on('formchange', (data)=> {
+
+        socket.to(data.id).broadcast.emit('formchange', {rounds: data.rounds, editTime: data.editTime});
 
     })
 
