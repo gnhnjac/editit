@@ -1,7 +1,6 @@
 require('dotenv').config();
 
 var express = require('express');
-var socket = require('socket.io');
 
 var app = express();
 
@@ -15,16 +14,44 @@ var server = app.listen(port, ()=> {
 
 app.use(express.static('public'));
 
-var io = socket(server);
+var io  = require('socket.io')(server);
+
+var rooms = [];
+
+setInterval(()=> {
+
+}, 1000);
 
 io.on('connection', (socket)=> {
 
     console.log(`New connection from ${socket.id}`);
 
+    if(rooms.includes(socket.handshake.query.id)) {
+
+        socket.emit('redirect', `/game/?id=${socket.handshake.query.id}`);
+
+    }
+
+    socket.on('createroompage', (data)=> {
+
+        rooms.push(data.id);
+
+        socket.emit('redirect', `/game/?id=${data.id}`);
+
+    });
+
+    socket.on('joinroom', (data)=> {
+
+        socket.join(data.id);
+
+        console.log(`${socket.id} has joined room ${data.id}`);
+
+    })
+
     socket.on('disconnect', ()=> {
 
         console.log(`${socket.id} has disconnected`);
 
-    })
+    });
 
-})
+});
