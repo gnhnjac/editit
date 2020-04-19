@@ -1,26 +1,20 @@
 
-var ID = function () {
-    return Math.random().toString(36).substr(2, 9);
-};
+var socket = io();
 
-const urlParams = new URLSearchParams(window.location.search);
-const gameID = urlParams.get('id') || '';
+var playerName = document.getElementById('name');
+var gameID = document.getElementById('gameid');
+var create = document.getElementById('newroom');
+var join = document.getElementById('joinroom');
 
-console.log(gameID);
+create.addEventListener('click', () => {
 
-var socket = io({query: {
+    socket.emit('createroompage', {name: playerName.value});
 
-    id: gameID
+});
 
-}});
+join.addEventListener('click', () => {
 
-var button = document.getElementById('newroom');
-
-button.addEventListener('click', ()=> {
-
-    var newid = ID();
-
-    socket.emit('createroompage', {id: newid});
+    socket.emit('joinroompage', {id: gameID.value, name: playerName.value});
 
 });
 

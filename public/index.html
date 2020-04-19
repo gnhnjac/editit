@@ -1,15 +1,168 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Menu</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.3.0/socket.io.js"></script>
-</head>
-<body>
-    
-    <button id="newroom">Create Room</button>
-    <script src="menu.js"></script>
 
-</body>
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Menu</title>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.3.0/socket.io.js"></script>
+
+        <style>
+            * {
+
+                box-sizing: border-box;
+
+            }
+
+            div {
+                display: block;
+            }
+
+            form {
+                display: block;
+                margin-top: 0em;
+            }
+
+            #login {
+                margin-top: 10px;
+            }
+
+            .header {
+                width: 100%;
+                min-height: 50px;
+                margin-bottom: 8px;
+            }
+
+            .row {
+                margin-right: -15px;
+                margin-left: 15px;
+                margin: 0 auto;
+                width: 70%;
+            }
+
+            .loginTitle {
+                display: flex;
+                align-items: center;
+                padding: 4px 8px;
+                font-size: 24px;
+                background-color: #fff;
+                border-radius: 2px 2px 0 0;
+                border-bottom: 1px solid #d3d3d3;
+                width: 100%;
+                padding-bottom: 100px;
+            }
+
+            .loginContent {
+                background-color: #fff;
+                border-radius: 0 0 2px 2px;
+                padding: 8px;
+            }
+
+            .loginData {
+                display: flex;
+            }
+
+            .form-control {
+                display: block;
+                width: 100%;
+                height: 34px;
+                padding: 6px 12px;
+                font-size: 14px;
+                line-height: 1.42857143;
+                color: #555;
+                background-color: #fff;
+                background-image: none;
+                border: 1px solid #ccc;
+                border-radius: 4px;
+                -webkit-box-shadow: inset 0 1px 1px rgba(0, 0, 0, .075);
+                box-shadow: inset 0 1px 1px rgba(0, 0, 0, .075);
+                -webkit-transition: border-color ease-in-out .15s, -webkit-box-shadow ease-in-out .15s;
+                -o-transition: border-color ease-in-out .15s, box-shadow ease-in-out .15s;
+                transition: border-color ease-in-out .15s, box-shadow ease-in-out .15s;
+            }
+
+            .btn {
+                display: inline-block;
+                padding: 6px 12px;
+                margin-bottom: 0;
+                font-size: 14px;
+                font-weight: 400;
+                line-height: 1.42857143;
+                text-align: center;
+                white-space: nowrap;
+                vertical-align: middle;
+                -ms-touch-action: manipulation;
+                touch-action: manipulation;
+                cursor: pointer;
+                -webkit-user-select: none;
+                -moz-user-select: none;
+                -ms-user-select: none;
+                user-select: none;
+                background-image: none;
+                border: 1px solid transparent;
+                border-radius: 4px;
+            }
+
+            .btn-block {
+                display: block;
+                width: 100%;
+            }
+
+            .startBtn {
+
+                color: #fff;
+                background-color: #5cb85c;
+                border-color: #4cae4c;
+
+            }
+
+            .createBtn {
+
+                color: #fff;
+                background-color: #5bc0de;
+                border-color: #46b8da;
+
+            }
+        </style>
+
+    </head>
+
+    <body>
+
+        <div class="header">
+
+
+
+        </div>
+
+        <div id="login">
+            <div class="loginTitle"></div>
+            <div class="row">
+
+                <div class="loginContent">
+
+                    <form id="loginForm">
+
+                        <div class="loginData">
+
+                            <input class="form-control" id="name" placeholder="Enter your name" maxlength="15" />
+
+                            <input class="form-control" id="gameid" placeholder="Enter Room Code" maxlength="15" />
+
+                        </div>
+
+                        <button type="submit" id="joinroom" class="btn startBtn btn-block" style="margin-top:8px">Join Room</button>
+
+                        <button type="submit" id="newroom" class="btn createBtn btn-block"  style="margin-top:8px">Create Room</button>
+
+                    </form>
+
+                </div>
+            </div>
+
+        </div>
+        <script src="menu.js"></script>
+
+    </body>
+
 </html>

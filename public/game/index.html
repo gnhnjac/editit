@@ -1,16 +1,158 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Game</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.3.0/socket.io.js"></script>
-</head>
-<body>
-    
-    <canvas id="game"></canvas>
 
-    <script src="game.js"></script>
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Game</title>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.3.0/socket.io.js"></script>
 
-</body>
+        <style>
+            div {
+
+                display: block;
+
+            }
+
+            #screenLobby {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                margin-left: 16.66666667%;
+                width: 30%;
+                float: left;
+                position: relative;
+                min-height: 1px;
+                padding-right: 15px;
+                padding-left: 15px;
+                padding-top: 5%;
+            }
+
+
+            .containerLobby {
+
+                display: flex;
+                justify-content: center;
+                width: 100%;
+
+            }
+
+            .settingsSection {
+
+                flex: 1 1 auto;
+
+            }
+
+            .playerSection {
+
+                flex: 0 0 auto;
+
+            }
+
+            .settings {
+                flex-direction: column;
+                margin-right: 8px;
+            }
+
+            .title {
+
+                font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+                font-size: 30px;
+
+            }
+
+            .containerInvite {
+                width: 100%;
+                flex-direction: column;
+                align-items: center;
+                margin-bottom: 8px;
+                display: flex;
+            }
+
+            #screenLobby .title {
+                text-align: center;
+                font-size: 35px;
+            }
+
+            .inviteBar {
+                display: flex;
+                width: 100%;
+            }
+
+            .inviteInput {
+                position: relative;
+                text-align: enter;
+                display: flex;
+                width: 100%;
+            }
+
+            #invite {
+                flex: 1 1 auto;
+                height: 32px;
+                border: 1px solid #d3d3d3;
+                border-radius: 2px 0 0 2px;
+                line-height: 32px;
+                text-align: center;
+                margin: 0;
+                font: inherit;
+                font-size: 30px;
+                color: inherit;
+            }
+        </style>
+    </head>
+
+    <body>
+
+        <div id="game">
+
+            <div id="screenLobby">
+
+                <div class="containerLobby">
+
+                    <div class="settingsSection">
+
+                        <h3 class="title"> Settings </h3>
+
+                        <div class="settings">
+
+                        </div>
+
+
+                    </div>
+
+                    <div class="playerSection">
+
+                        <h3 class="title"> Players </h3>
+
+                        <div class="players">
+
+                        </div>
+
+                    </div>
+                </div>
+
+                <div class="containerInvite">
+
+                    <h3 class="title">Room Code</h3>
+
+                    <div class="inviteBar">
+
+                        <div class="inviteInput">
+
+                            <input id="invite" type="text" readonly/>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <script src="game.js"></script>
+
+    </body>
+
 </html>
