@@ -8,6 +8,14 @@
         <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.3.0/socket.io.js"></script>
 
         <style>
+            body {
+
+                background-image: url('game/resources/background.png');
+                background-size: 350px;
+                background-repeat: repeat;
+
+            }
+
             * {
 
                 box-sizing: border-box;
@@ -30,26 +38,14 @@
             .header {
                 width: 100%;
                 min-height: 50px;
-                margin-bottom: 8px;
+                margin-top: 30px;
             }
 
             .row {
                 margin-right: -15px;
                 margin-left: 15px;
                 margin: 0 auto;
-                width: 70%;
-            }
-
-            .loginTitle {
-                display: flex;
-                align-items: center;
-                padding: 4px 8px;
-                font-size: 24px;
-                background-color: #fff;
-                border-radius: 2px 2px 0 0;
-                border-bottom: 1px solid #d3d3d3;
-                width: 100%;
-                padding-bottom: 100px;
+                width: 50%;
             }
 
             .loginContent {
@@ -123,6 +119,28 @@
                 border-color: #46b8da;
 
             }
+
+            #containerLogoBig {
+                width: 100%;
+                justify-content: center;
+                display: flex;
+            }
+
+            .logoBig {
+                width: 100%;
+                max-width: 800px;
+            }
+
+            .logo {
+                cursor: pointer;
+                display: inline-block;
+                height: auto;
+                image-rendering: -moz-crisp-edges;
+                image-rendering: -o-crisp-edges;
+                image-rendering: -webkit-optimize-contrast;
+                image-rendering: pixelated;
+            }
+
         </style>
 
     </head>
@@ -131,12 +149,16 @@
 
         <div class="header">
 
-
+            <div id="containerLogoBig">
+                <a href="/">
+                    <img class="logo logoBig" src="game/resources/logo.gif">
+                </a>
+            </div>
 
         </div>
 
         <div id="login">
-            <div class="loginTitle"></div>
+
             <div class="row">
 
                 <div class="loginContent">
@@ -151,9 +173,11 @@
 
                         </div>
 
-                        <button type="submit" id="joinroom" class="btn startBtn btn-block" style="margin-top:8px">Join Room</button>
+                        <button type="submit" id="joinroom" class="btn startBtn btn-block" style="margin-top:8px">Join
+                            Room</button>
 
-                        <button type="submit" id="newroom" class="btn createBtn btn-block"  style="margin-top:8px">Create Room</button>
+                        <button type="submit" id="newroom" class="btn createBtn btn-block" style="margin-top:8px">Create
+                            Room</button>
 
                     </form>
 

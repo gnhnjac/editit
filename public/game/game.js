@@ -11,8 +11,6 @@ document.getElementById('invite').value = gameID;
 
 var playerHolder = document.getElementById('playersContainer');
 
-var player = {name: playerName, id: 0};
-
 // Forms
 
 var forms = [];
@@ -21,13 +19,29 @@ forms.push(document.getElementById('lobbySetRounds'));
 
 forms.push(document.getElementById('lobbySetEditTime'));
 
-socket.on('init', (data)=> {
+socket.on('failed', ()=> {
 
-    if(data.owner) {
-        document.getElementById('invite').value = gameID;
+
+    document.getElementById('game').innerHTML = "<p> FAILED TO LOAD </p>";
+
+});
+
+socket.on('init', (owner)=> {
+
+    if(owner) {
+
+        document.getElementsByClassName('containerInvite')[0].style.display = "initial";
+
+        for(form of document.getElementsByClassName('form-control')) {
+
+            form.disabled = false;
+
+        }
+
+
     } else {
 
-        document.getElementsByClassName('containerInvite')[0].innerHTML = "";
+        document.getElementsByClassName('containerInvite')[0].style.display = "none";
         
         for(form of document.getElementsByClassName('form-control')) {
 
@@ -37,15 +51,13 @@ socket.on('init', (data)=> {
 
     }
 
-    player.id = data.id;
-
 });
 
 for(form of forms) {
 
     form.addEventListener('change', ()=> {
 
-        socket.emit('formchange', ({rounds: forms[0].value, editTime: forms[1].value, id: gameID}));
+        socket.emit('formchange', ({rounds: forms[0].value, editTime: forms[1].value}));
     
     
     });
@@ -59,7 +71,7 @@ socket.on('formchange', (data)=> {
 
 });
 
-socket.on('newplayer', (data)=> {
+socket.on('updateplayers', (data)=> {
 
     playerHolder.innerHTML = "";
 
@@ -69,13 +81,13 @@ socket.on('newplayer', (data)=> {
 
         if(playerData.owner) {
 
-            pData += `<img src="crown.png" alt="He's the owner""></img>`;
+            pData += `<img src="resources/crown.png" alt="He's the owner""></img>`;
 
         }
 
         pData += `<p class="name"> ${playerData.name} </p>`;
 
-        if(playerData.id == player.id) {
+        if(playerData.id == socket.id) {
 
             pData += `<p class="you"> You </p>`;
 
