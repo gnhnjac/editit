@@ -26,6 +26,11 @@ var randSubject;
 
 var image;
 
+
+var timerInterval;
+var timer = false;
+var countdown = 5;
+
 var fontSize = 55;
 
 ctx.textAlign = "center";
@@ -99,6 +104,30 @@ async function getImage(search) {
 
 }
 
+function decreaseTimer() {
+
+    if (timer) {
+        countdown--;
+    }
+}
+
+async function toDataURL(url) {
+    return fetch(url).then((response) => {
+            return response.blob();
+        }).then(blob => {
+            return URL.createObjectURL(blob);
+        });
+}
+
+async function download() {
+    const a = document.createElement("a");
+    a.href = await toDataURL(image.src);
+    a.download = randSubject + ".png";
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+}
+
 function clear() {
 
     ctx.fillStyle = 'white';
@@ -106,7 +135,7 @@ function clear() {
 
 }
 
-function Button(x, y, text) {
+function Button(x, y, text, color) {
 
     this.x = x;
     this.y = y;
@@ -116,11 +145,13 @@ function Button(x, y, text) {
     this.w = ctx.measureText(this.text).width;
     this.h = fontSize;
 
+    this.color = color;
+
 }
 
 Button.prototype.show = function () {
 
-    ctx.fillStyle = 'black';
+    ctx.fillStyle = this.color;
 
     ctx.fillText(this.text, this.x, this.y);
 
@@ -279,16 +310,20 @@ socket.on('startgame', () => {
 
     randSubjects = getRandomSubjects();
 
+    timerInterval = setInterval(decreaseTimer, 1000);
+
     setInterval(main, 10);
 
 
 });
 
-socket.on('imageChosen', (source) => {
+socket.on('imageChosen', (data) => {
 
     image = new Image;
 
-    image.src = source;
+    image.src = data.src;
+
+    randSubject = data.sub;
 
     introstage = 4;
 
@@ -308,7 +343,7 @@ function main() {
             ctx.fillText("Welcome to EditIT!", canvas.width / 2, canvas.height / 2);
 
             if (amOwner) {
-                let continueBtn = new Button(canvas.width / 2, canvas.height / 2 + 100, "Continue");
+                let continueBtn = new Button(canvas.width / 2, canvas.height / 2 + 100, "Continue", 'black');
 
                 continueBtn.show();
 
@@ -323,11 +358,13 @@ function main() {
 
             for (let i = 0; i < 3; i++) {
 
-                let subjectButton = new Button(canvas.width / 2, canvas.height / 2 + fontSize * 2 + fontSize * i, randSubjects[i]);
+                let subjectButton = new Button(canvas.width / 2, canvas.height / 2 + fontSize * 2 + fontSize * i, randSubjects[i], 'black');
 
                 subjectButton.show();
 
                 if (subjectButton.collide(mousePos.x, mousePos.y) && leftClick) {
+
+                    randSubject = randSubjects[i];
 
                     introstage++;
 
@@ -346,22 +383,58 @@ function main() {
 
             getImage(randSubject).then(res => {
 
-                socket.emit('imageChosen', res);
-
-                image = new Image;
-
-                image.src = res;
+                socket.emit('imageChosen', { img: res, sub: randSubject });
 
             });
 
-            introstage++;
+            introstage = -1;
 
         }
 
         if (introstage == 4) {
 
-            ctx.drawImage(image, canvas.width / 2 - image.width / 2, canvas.height / 2 - image.height / 2);
+            timer = true;
 
+            ctx.fillStyle = '#286580';
+
+            ctx.fillText(countdown, canvas.width / 2, canvas.height / 2);
+
+            if (countdown == 0) {
+
+                timer = false;
+
+                countdown = 180;
+
+                introstage++;
+
+            }
+
+        }
+
+        if (introstage == 5) {
+
+            timer = true;
+
+            ctx.drawImage(image, canvas.width / 2 - image.width / 2, canvas.height / 2 - image.height / 4);
+
+            ctx.fillStyle = 'black';
+            ctx.fillText("Subject: " + randSubject, canvas.width / 2, fontSize*1.5);
+
+            let button = new Button(canvas.width / 2, fontSize * 2.8, "Download", 'lime');
+
+            button.show();
+
+            const a = document.createElement("a");
+            a.href = toDataURL(image.src);
+            a.download = randSubject + ".png";
+
+            if (button.collide(mousePos.x, mousePos.y) && leftClick) {
+                download();
+                leftClick = false;
+            }
+
+            ctx.fillStyle = '#286580';
+            ctx.fillText(Math.floor(countdown / 60) + ":" + countdown % 60, canvas.width / 2, fontSize * 4);
         }
 
     }

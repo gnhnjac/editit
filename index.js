@@ -201,9 +201,9 @@ io.on('connection', (socket) => {
 
     });
 
-    socket.on('imageChosen', (src) => {
+    socket.on('imageChosen', (data) => {
 
-        socket.to(playerRoomId).emit('imageChosen', src);
+        io.to(playerRoomId).emit('imageChosen', {src: data.img, sub: data.sub});
 
     })
 
