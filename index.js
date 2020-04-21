@@ -1,7 +1,8 @@
 require('dotenv').config();
 
-var express = require('express');
-var request = require("request");
+const express = require('express');
+const request = require("request");
+const fs = require('fs');
 
 var app = express();
 
@@ -10,6 +11,16 @@ var port = process.env.PORT || 3000;
 var server = app.listen(port, () => {
 
     console.log(`listening on port ${port}`);
+
+})
+
+app.get('/api/nouns', async function(req, res) {
+
+    fs.readFile('nouns.txt', 'utf8', (err, data)=> {
+    
+        res.json({nouns: data});
+    
+    });
 
 })
 

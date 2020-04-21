@@ -6,7 +6,19 @@ const ctx = canvas.getContext('2d');
 canvas.width = 650;
 canvas.height = 650;
 
-var subjects = ['pig', 'animal', 'cow', 'chicken', 'moose', 'kfc', 'pewdiepie', 'fat', 'thin', 'anorax', 'bunny', 'rabbit'];
+var subjects;
+
+fetch('/api/nouns', { method: 'GET' }).then(res => {
+
+    const data = res.json();
+
+    data.then(res => {
+
+        subjects = res.nouns.split('\n')
+
+    });
+
+});
 
 var randSubjects;
 
