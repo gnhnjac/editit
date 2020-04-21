@@ -41,8 +41,9 @@
 
             .logoSmall {
                 width: 320px;
-                -webkit-filter: blur(0.5px);
                 mix-blend-mode: overlay;
+                filter: blur(0.5px);
+                -webkit-filter: blur(0.5px);
             }
 
             .logo {
@@ -277,6 +278,37 @@
                 margin-left: auto;
                 margin-right: auto;
             }
+
+            #gameScreen {
+
+                display: flex;
+                position: relative;
+                margin-left: 16.66666667%;
+                flex-direction: row;
+                width: 70vh;
+                padding-right: 15px;
+                padding-left: 15px;
+                align-items: center;
+                margin: 0 auto;
+
+            }
+
+
+            .gameContainer {
+
+                justify-content: center;
+                display: flex;
+                width: 70%;
+                margin: 0 auto;
+
+            }
+
+            .gameDisplay {
+
+                flex: 1 1 auto;
+
+            }
+
         </style>
     </head>
 
@@ -378,9 +410,23 @@
             </div>
 
 
-            <div class="gameCanvasStyle">
+            <div id="gameScreen" style="display: none">
 
-                <canvas style="display: none"></canvas>
+                <div class="gameContainer">
+
+                    <div class="gameDisplay">
+
+                        <canvas id="gameCanvas"></canvas>
+
+                    </div>
+
+                    <div class="gameBoard">
+
+
+
+                    </div>
+
+                </div>
 
             </div>
 

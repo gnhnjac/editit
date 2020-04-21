@@ -8,17 +8,17 @@ var join = document.getElementById('joinroom');
 
 create.addEventListener('click', () => {
 
-    socket.emit('createroompage', {name: playerName.value});
+    socket.emit('createroompage', { name: playerName.value });
 
 });
 
 join.addEventListener('click', () => {
 
-    socket.emit('joinroompage', {id: gameID.value, name: playerName.value});
+    socket.emit('joinroompage', { id: gameID.value, name: playerName.value });
 
 });
 
-socket.on('redirect', (data)=> {
+socket.on('redirect', (data) => {
 
     window.location.href = data;
 
