@@ -1,6 +1,7 @@
 require('dotenv').config();
 
 var express = require('express');
+var request = require("request");
 
 var app = express();
 
@@ -11,6 +12,23 @@ var server = app.listen(port, () => {
     console.log(`listening on port ${port}`);
 
 })
+
+app.get('/api/random_flickr', async function (req, response) {
+
+    var options = {
+        method: 'GET',
+        url: `https://api.flickr.com/services/rest/?method=flickr.photos.search&format=json&nojsoncallback=1&text=${req.query.search}&sort=relevance&per_page=500&api_key=${process.env.API_KEY}`
+    };
+
+    await request(options, (error, res) => {
+
+        let image = JSON.parse(res.body)['photos']['photo'][Math.floor(Math.random() * 500)];
+
+        response.json({ url: `https://farm${image['farm']}.staticflickr.com/${image['server']}/${image['id']}_${image['secret']}.jpg` });
+
+    });
+
+});
 
 app.use(express.static('public'));
 
@@ -51,6 +69,8 @@ function checkExists(roomID, arr) {
 function Room(id) {
 
     this.id = id;
+
+    this.midGame = false;
 
     this.players = [];
 
@@ -123,19 +143,30 @@ io.on('connection', (socket) => {
     socket.on('joinroom', (data) => {
 
         if (checkExists(data.id, rooms)) {
+
             var roomObj = rooms[findRoom(data.id, rooms)];
 
-            playerRoomId = data.id;
+            if (!roomObj.midGame) {
 
-            socket.join(data.id);
 
-            console.log(`${data.name} has joined room ${data.id}`);
+                playerRoomId = data.id;
 
-            let isOwner = roomObj.addPlayer(data.name, socket.id);
+                socket.join(data.id);
 
-            socket.emit('init', isOwner);
+                console.log(`${data.name} has joined room ${data.id}`);
 
-            io.to(playerRoomId).emit('updateplayers', roomObj.players);
+                let isOwner = roomObj.addPlayer(data.name, socket.id);
+
+                socket.emit('init', isOwner);
+
+                io.to(playerRoomId).emit('updateplayers', roomObj.players);
+
+            } else {
+
+                socket.emit('midgame');
+
+            }
+
         } else {
 
             socket.emit('failed');
@@ -148,6 +179,22 @@ io.on('connection', (socket) => {
         socket.to(playerRoomId).broadcast.emit('formchange', { rounds: data.rounds, editTime: data.editTime });
 
     });
+
+    // game
+
+    socket.on('startgame', () => {
+
+        rooms[findRoom(playerRoomId, rooms)].midGame = true;
+
+        io.to(playerRoomId).emit('startgame');
+
+    });
+
+    socket.on('imageChosen', (src) => {
+
+        socket.to(playerRoomId).emit('imageChosen', src);
+
+    })
 
     socket.on('disconnect', () => {
 
