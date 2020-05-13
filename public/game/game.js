@@ -20,25 +20,24 @@ fetch('/api/nouns', { method: 'GET' }).then(res => {
 
 });
 
+// Rand Subject array
 var randSubjects;
 
+// Rand Subject Chosen
 var randSubject;
 
+// Random picked image
 var image;
 
+var finishedImages = [];
 
-var timerInterval;
-var timer = false;
-var countdown = 5;
+var amChooser = false;
+
+var timerTime = 0;
 
 var fontSize = 55;
 
-ctx.textAlign = "center";
-ctx.font = fontSize + "px Comic Sans MS";
-
-var stage = -1;
-
-var introstage = 1;
+var stage = 1;
 
 var leftClick = false;
 
@@ -46,6 +45,9 @@ var mousePos = {
     x: 0,
     y: 0
 };
+
+ctx.textAlign = "center";
+ctx.font = fontSize + "px Comic Sans MS";
 
 document.onmouseup = function (e) {
 
@@ -104,19 +106,12 @@ async function getImage(search) {
 
 }
 
-function decreaseTimer() {
-
-    if (timer) {
-        countdown--;
-    }
-}
-
 async function toDataURL(url) {
     return fetch(url).then((response) => {
-            return response.blob();
-        }).then(blob => {
-            return URL.createObjectURL(blob);
-        });
+        return response.blob();
+    }).then(blob => {
+        return URL.createObjectURL(blob);
+    });
 }
 
 async function download() {
@@ -183,6 +178,8 @@ document.getElementById('invite').value = gameID;
 
 var playerHolder = document.getElementById('playersContainer');
 
+var playerHolderGame = document.getElementById('playersContainerGame');
+
 var amOwner = false;
 
 // Forms
@@ -195,13 +192,21 @@ forms.push(document.getElementById('lobbySetEditTime'));
 
 var playBtn = document.getElementById('buttonLobbyPlay');
 
+var submitImg = document.getElementById('submitimage');
+
 // Pregame actions
 
 playBtn.addEventListener('click', () => {
 
-    socket.emit('startgame');
+    socket.emit('startround', { rounds: forms[0].value, per: forms[1].value });
 
 });
+
+socket.on('notenoughplayers', () => {
+
+    alert("You Need a minimum of 3 players");
+
+})
 
 socket.on('failed', () => {
 
@@ -210,10 +215,28 @@ socket.on('failed', () => {
 
 });
 
-socket.on('midgame', () => {
+socket.on('midgame', (data) => {
 
+    if (data.src) {
+        image = new Image;
 
-    document.getElementById('game').innerHTML = "<p> GAME ALREADY STARTED </p>";
+        image.src = data.src;
+
+        randSubject = data.sub;
+
+        stage = 5;
+
+    } else {
+
+        stage = 1;
+
+    }
+
+    document.getElementById('screenLobby').style.display = "none";
+
+    document.getElementById('gameScreen').style.display = "initial";
+
+    setInterval(main, 10);
 
 });
 
@@ -258,7 +281,6 @@ for (form of forms) {
 
         socket.emit('formchange', ({ rounds: forms[0].value, editTime: forms[1].value }));
 
-
     });
 
 }
@@ -272,27 +294,56 @@ socket.on('formchange', (data) => {
 
 socket.on('updateplayers', (data) => {
 
-    playerHolder.innerHTML = "";
+    if (data.mid == false) {
+        playerHolder.innerHTML = "";
 
-    for (playerData of data) {
+        for (playerData of data.players) {
 
-        let pData = `<div class="lobbyPlayer">`;
+            let pData = `<div class="lobbyPlayer">`;
 
-        if (playerData.owner) {
+            if (playerData.owner) {
 
-            pData += `<img src="resources/crown.png" alt="He's the owner""></img>`;
+                pData += `<img src="resources/crown.png" alt="He's the owner""></img>`;
+
+            }
+
+            pData += `<p class="name"> ${playerData.name} </p>`;
+
+            if (playerData.id == socket.id) {
+
+                pData += `<p class="you"> You </p>`;
+
+            }
+
+            playerHolder.innerHTML += `${pData} </div>`;
 
         }
+    } else {
 
-        pData += `<p class="name"> ${playerData.name} </p>`;
+        playerHolderGame.innerHTML = "";
 
-        if (playerData.id == socket.id) {
+        for (playerData of data.players) {
 
-            pData += `<p class="you"> You </p>`;
+            let pData = `<div class="gamePlayer">`;
 
+            if (playerData.id == data.chooserid) {
+
+                pData += '<p style="display: inline-block; text-align: center;"> 🚩 </p>'
+
+            }
+
+            pData += `<p class="name"> ${playerData.name} </p>`;
+
+            if (playerData.id == socket.id) {
+
+                pData += `<p class="you"> You </p>`;
+
+            }
+
+            pData += `<p style="display: inline-block; text-align: center;"> ${playerData.points} </p>`;
+
+            playerHolderGame.innerHTML += `${pData} </div>`;
         }
-
-        playerHolder.innerHTML += `${pData} </div>`;
 
     }
 
@@ -300,22 +351,46 @@ socket.on('updateplayers', (data) => {
 
 // Game actions
 
-socket.on('startgame', () => {
+submitImg.addEventListener('click', () => {
+
+    const file = document.getElementById('photoshopped').files[0];
+    const reader = new FileReader();
+
+    reader.addEventListener("load", function () {
+        socket.emit('submitimage', reader.result);
+    }, false);
+
+    if (file) {
+        reader.readAsDataURL(file);
+    }
+
+})
+
+socket.on('startround', (chooserInd) => {
+
+    if (chooserInd == socket.id) {
+
+        amChooser = true;
+
+    }
 
     document.getElementById('screenLobby').style.display = "none";
 
     document.getElementById('gameScreen').style.display = "initial";
 
-    stage = 0;
-
     randSubjects = getRandomSubjects();
-
-    timerInterval = setInterval(decreaseTimer, 1000);
 
     setInterval(main, 10);
 
-
 });
+
+socket.on('timer', (t) => {
+
+    timerTime = t;
+
+})
+
+
 
 socket.on('imageChosen', (data) => {
 
@@ -325,116 +400,193 @@ socket.on('imageChosen', (data) => {
 
     randSubject = data.sub;
 
-    introstage = 4;
+    stage = 4;
+
+});
+
+socket.on('begindrawing', () => {
+
+    stage = 5;
+
+});
+
+socket.on('roundover', (images) => {
+
+    finishedImages = [];
+
+    for (imageSrc of images) {
+
+        var fimage = new Image();
+        fimage.src = imageSrc;
+
+        finishedImages.push(fimage);
+
+    }
+
+    document.getElementById("photoshopped").style.opacity = 0;
+    document.getElementById("photoshopped").disabled = true;
+
+    document.getElementById("submitimage").style.opacity = 0;
+    document.getElementById("submitimage").disabled = true;
+
+    canvas.width = 1300;
+
+    stage = 6;
 
 })
-
-
 
 function main() {
 
     clear();
 
-    if (stage == 0) {
+    if (stage == 1) {
 
-        if (introstage == 1) {
+        ctx.fillStyle = '#286580';
 
-            ctx.fillStyle = '#286580';
+        if (amChooser) {
             ctx.fillText("Welcome to EditIT!", canvas.width / 2, canvas.height / 2);
+        } else {
+            ctx.fillText("Wait for the chooser", canvas.width / 2, canvas.height / 2);
+            ctx.fillText("to choose a subject", canvas.width / 2, canvas.height / 2 + fontSize);
+
+        }
+
+
+        if (amOwner) {
+            let continueBtn = new Button(canvas.width / 2, canvas.height / 2 + 100, "Continue", 'black');
+
+            continueBtn.show();
+
+            if (continueBtn.collide(mousePos.x, mousePos.y) && leftClick) stage++; leftClick = false;
+        }
+    }
+
+    if (stage == 2) {
+
+        ctx.fillStyle = '#286580';
+        ctx.fillText("Choose a subject", canvas.width / 2, canvas.height / 2);
+
+        for (let i = 0; i < 3; i++) {
+
+            let subjectButton = new Button(canvas.width / 2, canvas.height / 2 + fontSize * 2 + fontSize * i, randSubjects[i], 'black');
+
+            subjectButton.show();
+
+            if (subjectButton.collide(mousePos.x, mousePos.y) && leftClick) {
+
+                randSubject = randSubjects[i];
+
+                stage++;
+
+                leftClick = false;
+
+            }
+
+        }
+
+    }
+
+    if (stage == 3) {
+
+        ctx.fillStyle = '#286580';
+        ctx.fillText("Getting the image...", canvas.width / 2, canvas.height / 2);
+
+        getImage(randSubject).then(res => {
+
+            socket.emit('preeditcountdown', { img: res, sub: randSubject });
+
+        });
+
+        stage = -1;
+
+    }
+
+    if (stage == 4) {
+
+        ctx.fillStyle = '#286580';
+
+        ctx.fillText(timerTime, canvas.width / 2, canvas.height / 2);
+
+        if (timerTime == 0) {
 
             if (amOwner) {
-                let continueBtn = new Button(canvas.width / 2, canvas.height / 2 + 100, "Continue", 'black');
 
-                continueBtn.show();
+                socket.emit('roundcountdown');
 
-                if (continueBtn.collide(mousePos.x, mousePos.y) && leftClick) introstage++; leftClick = false;
             }
+
+            document.getElementById("photoshopped").style.opacity = 100;
+            document.getElementById("photoshopped").disabled = false;
+
+            document.getElementById("submitimage").style.opacity = 100;
+            document.getElementById("submitimage").disabled = false;
+
         }
 
-        if (introstage == 2) {
+    }
 
-            ctx.fillStyle = '#286580';
-            ctx.fillText("Choose a subject", canvas.width / 2, canvas.height / 2);
+    if (stage == 5) {
 
-            for (let i = 0; i < 3; i++) {
+        ctx.drawImage(image, canvas.width / 2 - image.width / 2, canvas.height / 2 - image.height / 4);
 
-                let subjectButton = new Button(canvas.width / 2, canvas.height / 2 + fontSize * 2 + fontSize * i, randSubjects[i], 'black');
+        ctx.fillStyle = 'black';
+        ctx.fillText("Subject: " + randSubject, canvas.width / 2, fontSize * 1.5);
 
-                subjectButton.show();
+        let button = new Button(canvas.width / 2, fontSize * 2.8, "Download", 'lime');
 
-                if (subjectButton.collide(mousePos.x, mousePos.y) && leftClick) {
+        button.show();
 
-                    randSubject = randSubjects[i];
+        const a = document.createElement("a");
+        a.href = toDataURL(image.src);
+        a.download = randSubject + ".png";
 
-                    introstage++;
+        if (button.collide(mousePos.x, mousePos.y) && leftClick) {
+            download();
+            leftClick = false;
+        }
 
-                    leftClick = false;
+        ctx.fillStyle = '#286580';
+        ctx.fillText(Math.floor(timerTime / 60) + ":" + timerTime % 60, canvas.width / 2, fontSize * 4);
 
+        if (timerTime == 0) {
+
+            if (amOwner) {
+                socket.emit('roundover');
+            }
+
+        }
+
+    }
+
+    if (stage == 6) {
+
+        var i = 0;
+        var zoomed = false;
+        for (let j = -finishedImages.length / 2; j < finishedImages.length / 2; j++) {
+
+            var rect = canvas.getBoundingClientRect();
+
+            let x = mousePos.x - rect.left;
+
+            let y = mousePos.y - rect.top;
+
+            if (x >= canvas.width / 2 + j * (canvas.width / 6) && x <= canvas.width / 2 + j * (canvas.width / 6) + canvas.width / 6 && y >= 0 && y <= canvas.width / 6) {
+
+                ctx.drawImage(finishedImages[i], canvas.width / 2 - canvas.height / 2, 0, canvas.height, canvas.height);
+                ctx.strokeStyle = "black";
+                ctx.strokeRect(canvas.width / 2 - canvas.height / 2, 0, canvas.height, canvas.height);
+                zoomed = true;
+
+            } else {
+
+                if (!zoomed) {
+                    ctx.drawImage(finishedImages[i], canvas.width / 2 + j * (canvas.width / 6), 0, canvas.width / 6, canvas.width / 6);
+                    ctx.strokeStyle = "black";
+                    ctx.strokeRect(canvas.width / 2 + j * (canvas.width / 6), 0, canvas.width / 6, canvas.width / 6);
                 }
-
             }
 
-        }
-
-        if (introstage == 3) {
-
-            ctx.fillStyle = '#286580';
-            ctx.fillText("Getting the image...", canvas.width / 2, canvas.height / 2);
-
-            getImage(randSubject).then(res => {
-
-                socket.emit('imageChosen', { img: res, sub: randSubject });
-
-            });
-
-            introstage = -1;
-
-        }
-
-        if (introstage == 4) {
-
-            timer = true;
-
-            ctx.fillStyle = '#286580';
-
-            ctx.fillText(countdown, canvas.width / 2, canvas.height / 2);
-
-            if (countdown == 0) {
-
-                timer = false;
-
-                countdown = 180;
-
-                introstage++;
-
-            }
-
-        }
-
-        if (introstage == 5) {
-
-            timer = true;
-
-            ctx.drawImage(image, canvas.width / 2 - image.width / 2, canvas.height / 2 - image.height / 4);
-
-            ctx.fillStyle = 'black';
-            ctx.fillText("Subject: " + randSubject, canvas.width / 2, fontSize*1.5);
-
-            let button = new Button(canvas.width / 2, fontSize * 2.8, "Download", 'lime');
-
-            button.show();
-
-            const a = document.createElement("a");
-            a.href = toDataURL(image.src);
-            a.download = randSubject + ".png";
-
-            if (button.collide(mousePos.x, mousePos.y) && leftClick) {
-                download();
-                leftClick = false;
-            }
-
-            ctx.fillStyle = '#286580';
-            ctx.fillText(Math.floor(countdown / 60) + ":" + countdown % 60, canvas.width / 2, fontSize * 4);
+            i++;
         }
 
     }
